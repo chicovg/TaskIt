@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate, TaskDetailViewControllerDelegate, AddTaskViewControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -19,6 +19,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        self.view.backgroundColor = UIColor(patternImage: UIImage(named: "Background")!)
+        
         self.fetchedResultsController = getFetchResulsController()
         self.fetchedResultsController.delegate = self
         self.fetchedResultsController.performFetch(nil)
@@ -40,8 +42,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             let indexPath = self.tableView.indexPathForSelectedRow()
             let thisTask = fetchedResultsController.objectAtIndexPath(indexPath!) as! TaskModel
             detailVC.detailTaskModel = thisTask
+            detailVC.delegate = self
         } else if segue.identifier == "showTaskAdd" {
             let addTaskVC: AddTaskViewController = segue.destinationViewController as! AddTaskViewController
+            addTaskVC.delegate = self
         }
     }
     @IBAction func addButtonTapped(sender: UIBarButtonItem) {
@@ -99,6 +103,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         (UIApplication.sharedApplication().delegate as! AppDelegate).saveContext()
     }
     
+    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        cell.backgroundColor = UIColor.clearColor()
+    }
+    
     // NSFetchedResultsControllerDelegate
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         tableView.reloadData()
@@ -129,6 +137,26 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         for res in results {
             println(res)
         }
+    }
+    
+    // TaskDEtailViewControllerDelegate
+    func taskDetailEdited() {
+        showAlert()
+    }
+    
+    func showAlert(message: String = "Congratulations") {
+        var alert = UIAlertController(title: "Change Made!", message: "Congratulations", preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    // AddTaskViewControllerDelegate
+    func addTask(message: String) {
+        showAlert(message: message)
+    }
+    
+    func addTaskCancelled(message: String) {
+        showAlert(message: message)
     }
 }
 
